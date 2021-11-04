@@ -39,19 +39,19 @@ extern "C" {
     fn gpioSetMode(gpio: u32, mode: u32) -> i32;
     fn gpioGetMode(gpio: u32) -> i32;
     fn gpioSetPullUpDown(gpio: u32, pud: u32) -> i32; //
-    fn gpioRead(gpio: u32) -> i32;
+fn gpioRead(gpio: u32) -> i32;
     fn gpioWrite(gpio: u32, level: u32) -> i32;
 
     fn gpioDelay(micros: u32) -> u32;
 
-    fn gpioSetAlertFunc(user_gpio: u32, alert_func: extern fn (u32, u32, u32)) -> i32;
+    fn gpioSetAlertFunc(user_gpio: u32, alert_func: extern fn(u32, u32, u32)) -> i32;
 //    fn gpioSetAlertFuncEx(user_gpio: u32, f: gpioAlertFuncEx_t, void* userdata) -> i32;
 
     fn gpioTrigger(user_gpio: u32, pulseLen: u32, level: u32) -> i32; //
-    fn gpioSetWatchdog(user_gpio: u32, timeout: u32) -> i32; //
+fn gpioSetWatchdog(user_gpio: u32, timeout: u32) -> i32; //
+
+    fn gpioCfgClock(cfg_micros: u32, cfg_peripheral: u32, cfg_source: u32) -> i32;
 }
-
-
 
 
 /// Initializes the library.
@@ -63,7 +63,16 @@ pub fn initialize() -> GpioResponse {
         INIT_FAILED => Err("Initialize failed".to_string()),
         _ => Ok(result as u32)
     }
+}
 
+pub fn setCfgClock(cfg_micros: u32, cfg_peripheral: u32) -> GpioResponse {
+    assert!(cfg_peripheral == 0 || cfg_peripheral == 1);
+
+    let result = unsafe { gpioCfgClock(cfg_micros, cfg_peripheral, 0) };
+    match result {
+        -1 => Err("setting cfg clock failed".to_string()),
+        _ => Ok(result as u32)
+    }
 }
 
 /// Terminates the library.
@@ -132,7 +141,7 @@ pub fn delay(microseconds: u32) -> u32 {
 /// Registers a function to be called (a callback) when the specified GPIO changes state
 // http://abyz.me.uk/rpi/pigpio/cif.html#gpioSetAlertFunc
 pub fn set_alert_func(gpio: u32, alert_func: extern fn(u32, u32, u32)) -> GpioResult {
-    match unsafe { gpioSetAlertFunc(gpio, alert_func)} {
+    match unsafe { gpioSetAlertFunc(gpio, alert_func) } {
         OK => Ok(()),
         BAD_USER_GPIO => Err("Bad user gpio".to_string()),
         _ => Err(DEFAULT_ERROR.to_string()),
