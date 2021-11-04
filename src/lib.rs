@@ -65,6 +65,7 @@ pub fn initialize() -> GpioResponse {
     }
 }
 
+/// defaults: cfg_micros=5 cfg_periperal=1
 pub fn setCfgClock(cfg_micros: u32, cfg_peripheral: u32) -> GpioResponse {
     assert!(cfg_peripheral == 0 || cfg_peripheral == 1);
 
